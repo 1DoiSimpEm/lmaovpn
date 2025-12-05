@@ -1,0 +1,12 @@
+ninja: Entering directory `/Users/macos/AndroidStudioProjects/freevpn/openvpn/.cxx/Debug/2o6i3134/x86_64'
+[1/11] cd /Users/macos/AndroidStudioProjects/freevpn/openvpn/.cxx/Debug/2o6i3134/x86_64 && /Users/macos/Library/Android/sdk/cmake/3.22.1/bin/cmake -E make_directory /Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/cpp/../../../build/ovpnassets
+[2/11] Building C object CMakeFiles/crypto.dir/openssl/providers/implementations/ciphers/cipher_aes_gcm_hw.c.o
+[3/11] Linking C static library libcrypto.a
+[4/11] Linking C shared library /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libosslspeedtest.so
+[5/11] Linking CXX shared library /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libosslutil.so
+[6/11] Linking C shared library /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libopenvpn.so
+[7/11] Linking C executable /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libovpnexec.so
+[8/11] Linking C executable /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/pie_openvpn.x86_64
+[9/11] Linking CXX shared library /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libovpn3.so
+[10/11] Building C object CMakeFiles/ovpnutil.dir/ovpnutil/jniglue.c.o
+[11/11] Linking C shared library /Users/macos/AndroidStudioProjects/freevpn/openvpn/build/intermediates/cxx/Debug/2o6i3134/obj/x86_64/libovpnutil.so

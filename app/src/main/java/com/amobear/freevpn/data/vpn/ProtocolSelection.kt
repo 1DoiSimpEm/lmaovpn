@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) 2022 Proton AG
+ *
+ * This file is part of ProtonVPN.
+ *
+ * ProtonVPN is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ProtonVPN is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ProtonVPN.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.amobear.freevpn.data.vpn
+
+import com.amobear.freevpn.models.config.TransmissionProtocol
+import com.amobear.freevpn.models.config.VpnProtocol
+import java.io.Serializable
+
+@kotlinx.serialization.Serializable
+data class ProtocolSelection private constructor(
+    val vpn: VpnProtocol,
+    val transmission: TransmissionProtocol?
+) : Serializable {
+
+    fun isSupported(featureFlags: Any? = null): Boolean {
+        return when (vpn) {
+            VpnProtocol.OpenVPN -> true
+            VpnProtocol.WireGuard -> when (transmission) {
+                TransmissionProtocol.TCP, TransmissionProtocol.TLS -> false // TODO: check feature flags
+                else -> true
+            }
+            VpnProtocol.Smart -> true
+        }
+    }
+
+    // Protocol name as used in API endpoints
+    val apiName: String get() = "${vpn.name}${transmission?.name ?: ""}"
+
+    companion object {
+        @JvmStatic
+        operator fun invoke(
+            vpn: VpnProtocol,
+            transmission: TransmissionProtocol? = null
+        ) = ProtocolSelection(
+            vpn,
+            if (vpn == VpnProtocol.Smart)
+                null
+            else
+                transmission ?: TransmissionProtocol.UDP
+        )
+
+        val SMART = ProtocolSelection(VpnProtocol.Smart)
+        val STEALTH = ProtocolSelection(VpnProtocol.WireGuard, TransmissionProtocol.TLS)
+        val REAL_PROTOCOLS = listOf(
+            ProtocolSelection(VpnProtocol.WireGuard, TransmissionProtocol.UDP),
+            ProtocolSelection(VpnProtocol.WireGuard, TransmissionProtocol.TCP),
+            ProtocolSelection(VpnProtocol.OpenVPN, TransmissionProtocol.UDP),
+            ProtocolSelection(VpnProtocol.OpenVPN, TransmissionProtocol.TCP),
+            ProtocolSelection(VpnProtocol.WireGuard, TransmissionProtocol.TLS),
+        )
+        val PROTOCOLS_FOR: Map<VpnProtocol, List<ProtocolSelection>> =
+            REAL_PROTOCOLS.groupBy { it.vpn }
+    }
+}
+

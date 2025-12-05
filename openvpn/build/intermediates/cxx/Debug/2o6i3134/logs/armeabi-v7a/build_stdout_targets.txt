@@ -1,0 +1,2 @@
+ninja: Entering directory `/Users/macos/AndroidStudioProjects/freevpn/openvpn/.cxx/Debug/2o6i3134/armeabi-v7a'
+[1/1] cd /Users/macos/AndroidStudioProjects/freevpn/openvpn/.cxx/Debug/2o6i3134/armeabi-v7a && /Users/macos/Library/Android/sdk/cmake/3.22.1/bin/cmake -E make_directory /Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/cpp/../../../build/ovpnassets

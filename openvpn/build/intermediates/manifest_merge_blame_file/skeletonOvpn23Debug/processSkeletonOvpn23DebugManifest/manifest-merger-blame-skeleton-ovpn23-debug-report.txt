@@ -1,0 +1,59 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<!--
+3  ~ Copyright (c) 2012-2019 Arne Schwabe
+4  ~ Distributed under the GNU GPL v2 with additional terms. For full terms see the file doc/LICENSE.txt
+5-->
+6<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+7    xmlns:tools="http://schemas.android.com/tools"
+8    package="de.blinkt.openvpn" >
+9
+10    <uses-sdk android:minSdkVersion="21" />
+11
+12    <!--
+13    <application tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+14        <activity
+15                android:exported="true"
+16            android:name=".activities.NotImplemented"
+17            tools:ignore="ExportedActivity" />
+18
+19        <activity-alias
+20                android:exported="true"
+21                android:name=".activities.LogWindow"
+22                android:targetActivity=".activities.NotImplemented"
+23            />
+24
+25        <activity-alias
+26                android:exported="true"
+27                android:name=".activities.Req"
+28                android:targetActivity=".activities.NotImplemented"
+29                />
+30
+31    </application>
+32    -->
+33    <uses-permission android:name="android.permission.INTERNET" />
+33-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:5:5-67
+33-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:5:22-64
+34    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+34-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:6:5-79
+34-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:6:22-76
+35    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+35-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:7:5-81
+35-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:7:22-78
+36    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+36-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:8:5-77
+36-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:8:22-74
+37    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+37-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:9:5-77
+37-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:9:22-74
+38    <!--
+39 Used to show all apps in the allowed Apps selection,
+40         this app needs the list the app in the allow/deny apps over the VPN
+41    -->
+42    <uses-permission
+42-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:13:5-14:57
+43        android:name="android.permission.QUERY_ALL_PACKAGES"
+43-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:13:22-74
+44        tools:ignore="QueryAllPackagesPermission" />
+44-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:14:13-54
+45
+46</manifest>
