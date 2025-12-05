@@ -55,6 +55,25 @@
                 android:value="vpn" />
         </service>
 
+        <!-- Signal VPN Service using native libchannel.so -->
+        <service
+            android:name="com.amobear.freevpn.data.vpn.signal.SignalVpnService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="specialUse"
+            tools:ignore="ForegroundServicePermission">
+            <meta-data
+                android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
+                android:value="false"/>
+
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="vpn" />
+        </service>
+
 
         <!-- Status service used by the OpenVPN UI/activity -->
         <service

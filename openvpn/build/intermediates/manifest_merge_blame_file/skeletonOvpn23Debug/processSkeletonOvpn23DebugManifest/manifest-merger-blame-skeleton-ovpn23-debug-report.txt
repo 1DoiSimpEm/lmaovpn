@@ -31,29 +31,29 @@
 31    </application>
 32    -->
 33    <uses-permission android:name="android.permission.INTERNET" />
-33-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:5:5-67
-33-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:5:22-64
+33-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:5:5-67
+33-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:5:22-64
 34    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-34-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:6:5-79
-34-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:6:22-76
+34-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:6:5-79
+34-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:6:22-76
 35    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-35-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:7:5-81
-35-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:7:22-78
+35-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:7:5-81
+35-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:7:22-78
 36    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-36-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:8:5-77
-36-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:8:22-74
+36-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:8:5-77
+36-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:8:22-74
 37    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-37-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:9:5-77
-37-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:9:22-74
+37-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:9:5-77
+37-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:9:22-74
 38    <!--
 39 Used to show all apps in the allowed Apps selection,
 40         this app needs the list the app in the allow/deny apps over the VPN
 41    -->
 42    <uses-permission
-42-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:13:5-14:57
+42-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:13:5-14:57
 43        android:name="android.permission.QUERY_ALL_PACKAGES"
-43-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:13:22-74
+43-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:13:22-74
 44        tools:ignore="QueryAllPackagesPermission" />
-44-->/Users/macos/AndroidStudioProjects/freevpn/openvpn/src/main/AndroidManifest.xml:14:13-54
+44-->C:\Users\Admin\StudioProjects\lmaovpn\openvpn\src\main\AndroidManifest.xml:14:13-54
 45
 46</manifest>

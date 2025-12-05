@@ -40,18 +40,28 @@ endif()
     # Super hacky way to determine flavour
 #-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/arne/software/icsopenvpn/main/build/intermediates/cmake/normal/debug/obj/arm64-v8a
 if (NOT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} MATCHES "build/intermediates/cmake/.*skeleton.*/")
-    FIND_PACKAGE(SWIG 3.0 REQUIRED)
+    FIND_PACKAGE(SWIG 3.0 QUIET)
 
-    add_custom_command(OUTPUT "ovpncli_wrap.cxx"
-            COMMAND ${CMAKE_COMMAND} -E make_directory ovpn3
-            COMMAND ${SWIG_EXECUTABLE} -outdir ovpn3
-            -c++
-            -java -package net.openvpn.ovpn3
-            -outcurrentdir
-            -DOPENVPN_PLATFORM_ANDROID
-            -I${CMAKE_SOURCE_DIR}/openvpn3/client
-            -I${CMAKE_SOURCE_DIR}/openvpn3
-            ${CMAKE_SOURCE_DIR}/openvpn3/client/ovpncli.i)
+    if(SWIG_FOUND)
+        message(STATUS "SWIG found at: ${SWIG_EXECUTABLE}")
+        add_custom_command(OUTPUT "ovpncli_wrap.cxx"
+                COMMAND ${CMAKE_COMMAND} -E make_directory ovpn3
+                COMMAND ${SWIG_EXECUTABLE} -outdir ovpn3
+                -c++
+                -java -package net.openvpn.ovpn3
+                -outcurrentdir
+                -DOPENVPN_PLATFORM_ANDROID
+                -I${CMAKE_SOURCE_DIR}/openvpn3/client
+                -I${CMAKE_SOURCE_DIR}/openvpn3
+                ${CMAKE_SOURCE_DIR}/openvpn3/client/ovpncli.i)
+        set(HAS_SWIG_WRAPPER TRUE)
+    else()
+        message(WARNING "SWIG not found. Java bindings will be unavailable. Install SWIG 3.0+ or use the skeleton flavor.")
+        message(WARNING "To install SWIG on Windows: visit https://sourceforge.net/projects/swig/files/ and extract to C:\\swigwin-4.2.1, then add to PATH")
+        # Create empty wrapper file to allow compilation
+        file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ovpncli_wrap.cxx" "// SWIG wrapper generation was skipped - SWIG not installed")
+        set(HAS_SWIG_WRAPPER FALSE)
+    endif()
 
 
     # proper way bunt unfinished

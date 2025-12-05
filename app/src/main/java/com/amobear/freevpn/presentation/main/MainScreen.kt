@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +28,10 @@ import com.amobear.freevpn.util.PermissionManager
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import androidx.compose.ui.platform.LocalContext
+import com.amobear.freevpn.domain.model.SignalServer
+import com.amobear.freevpn.domain.usecase.ConnectSignalVpnUseCase
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import android.content.Intent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,18 @@ fun MainScreen(
             onPermissionsGranted = { viewModel.onPermissionsGranted() },
             onPermissionsDenied = { viewModel.onPermissionsDenied() }
         )
+    }
+    
+    // Handle Signal VPN permission request
+    if (uiState.showSignalVpnPermissionRequest && uiState.signalVpnPermissionIntent != null) {
+        LaunchedEffect(uiState.signalVpnPermissionIntent) {
+            try {
+                context.startActivity(uiState.signalVpnPermissionIntent)
+                viewModel.onSignalVpnPermissionGranted()
+            } catch (e: Exception) {
+                viewModel.onSignalVpnPermissionDenied()
+            }
+        }
     }
 
     Scaffold(
@@ -120,7 +136,12 @@ fun MainScreen(
                         signalResponse = uiState.signalResponse,
                         isLoading = uiState.isSignalLoading,
                         error = uiState.signalError,
-                        onBackToDefault = { viewModel.showDefaultServers() }
+                        isConnecting = uiState.isSignalConnecting,
+                        connectionState = uiState.signalVpnConnectionState,
+                        selectedServer = uiState.selectedSignalServer,
+                        onBackToDefault = { viewModel.showDefaultServers() },
+                        onConnect = { viewModel.connectSignalVpn(it) },
+                        onDisconnect = { viewModel.disconnectSignalVpn() }
                     )
                 } else {
                     ServerListSection(
@@ -535,7 +556,12 @@ fun SignalServerListSection(
     signalResponse: com.amobear.freevpn.domain.model.SignalServerResponse?,
     isLoading: Boolean,
     error: String?,
-    onBackToDefault: () -> Unit
+    isConnecting: Boolean,
+    connectionState: ConnectSignalVpnUseCase.ConnectionState,
+    selectedServer: SignalServer?,
+    onBackToDefault: () -> Unit,
+    onConnect: (SignalServer) -> Unit,
+    onDisconnect: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -604,30 +630,62 @@ fun SignalServerListSection(
                 modifier = Modifier.weight(1f)
             ) {
                 items(servers) { server ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
+                    SignalServerItem(
+                        server = server,
+                        isSelected = server.ip == selectedServer?.ip,
+                        isConnecting = isConnecting && server.ip == selectedServer?.ip,
+                        connectionState = if (server.ip == selectedServer?.ip) connectionState else ConnectSignalVpnUseCase.ConnectionState.Idle,
+                        onConnect = { onConnect(server) },
+                        onDisconnect = onDisconnect
+                    )
+                }
+            }
+            
+            // Connection status card
+            if (connectionState is ConnectSignalVpnUseCase.ConnectionState.Connected ||
+                connectionState is ConnectSignalVpnUseCase.ConnectionState.Connecting) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = when (connectionState) {
+                            is ConnectSignalVpnUseCase.ConnectionState.Connected -> 
+                                MaterialTheme.colorScheme.primaryContainer
+                            is ConnectSignalVpnUseCase.ConnectionState.Connecting -> 
+                                MaterialTheme.colorScheme.secondaryContainer
+                            else -> MaterialTheme.colorScheme.surface
+                        }
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = when (connectionState) {
+                                is ConnectSignalVpnUseCase.ConnectionState.Connected -> 
+                                    "Đã kết nối"
+                                is ConnectSignalVpnUseCase.ConnectionState.Connecting -> 
+                                    "Đang kết nối..."
+                                else -> "Trạng thái"
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
                         )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = listOf(server.country, server.area)
-                                    .filter { it.isNotBlank() }
-                                    .joinToString(" - ")
-                                    .ifBlank { server.ip },
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
+                        selectedServer?.let { server ->
+                            Text("Server: ${server.country}${if (server.area.isNotBlank()) " - ${server.area}" else ""}")
                             Text("IP: ${server.ip}")
-                            if (server.area.isNotBlank()) Text("Khu vực: ${server.area}")
-                            Text("Load: ${server.load}")
-                            Text("VIP: ${if (server.isVip) \"Yes\" else \"No\"}")
-                            Text("obs_key: ${server.obsKey}")
-                            Text("obs_algo: ${server.obsAlgo}")
-                            Text("Running: ${server.isRunning}")
+                        }
+                        if (connectionState is ConnectSignalVpnUseCase.ConnectionState.Connected) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = onDisconnect,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(Icons.Filled.Close, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Ngắt kết nối")
+                            }
                         }
                     }
                 }
@@ -702,6 +760,112 @@ fun ServerItem(
                     contentDescription = "Favorite",
                     tint = Color.Yellow
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SignalServerItem(
+    server: SignalServer,
+    isSelected: Boolean,
+    isConnecting: Boolean,
+    connectionState: ConnectSignalVpnUseCase.ConnectionState,
+    onConnect: () -> Unit,
+    onDisconnect: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                connectionState is ConnectSignalVpnUseCase.ConnectionState.Connected -> 
+                    MaterialTheme.colorScheme.primaryContainer
+                isSelected -> 
+                    MaterialTheme.colorScheme.secondaryContainer
+                else -> 
+                    MaterialTheme.colorScheme.surface
+            }
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = listOf(server.country, server.area)
+                            .filter { it.isNotBlank() }
+                            .joinToString(" - ")
+                            .ifBlank { server.ip },
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text("IP: ${server.ip}")
+                    if (server.area.isNotBlank()) {
+                        Text("Khu vực: ${server.area}")
+                    }
+                    Text("Load: ${server.load}%")
+                    if (server.isVip) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Star,
+                                contentDescription = "VIP",
+                                tint = Color.Yellow,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("VIP Server", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    if (server.isRunning) {
+                        Text(
+                            "✓ Running",
+                            color = Color.Green,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        Text(
+                            "✗ Not Running",
+                            color = Color.Red,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                
+                when {
+                    connectionState is ConnectSignalVpnUseCase.ConnectionState.Connected -> {
+                        Button(
+                            onClick = onDisconnect,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(Icons.Filled.Close, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Ngắt")
+                        }
+                    }
+                    isConnecting -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    else -> {
+                        Button(
+                            onClick = onConnect,
+                            enabled = server.isRunning
+                        ) {
+                            Icon(Icons.Filled.Lock, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Kết nối")
+                        }
+                    }
+                }
             }
         }
     }

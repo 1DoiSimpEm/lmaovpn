@@ -1,9 +1,0 @@
-/Users/macos/Library/Android/sdk/cmake/3.22.1/bin/ninja \
-  -C \
-  /Users/macos/AndroidStudioProjects/freevpn/openvpn/.cxx/Debug/2o6i3134/armeabi-v7a \
-  libovpnexec.so \
-  openvpn \
-  osslspeedtest \
-  osslutil \
-  ovpn3 \
-  ovpnutil

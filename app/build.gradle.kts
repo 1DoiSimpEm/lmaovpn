@@ -20,6 +20,11 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
+        // Native library ABI filters - include architectures we have .so files for
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        }
+        
         // BuildConfig fields matching ProtonVPN Android app exactly
         buildConfigField("String", "STORE_SUFFIX", "\"+play\"")
         buildConfigField("String", "ACCOUNT_SENTRY_DSN", "\"\"")
@@ -66,11 +71,27 @@ android {
         disable += setOf("ProtectedPermissions")
     }
 
+    // Configure native libraries location
+    sourceSets {
+        getByName("main") {
+            // Point jniLibs to the lib folder where .so files are stored
+            jniLibs.srcDirs("src/main/lib")
+        }
+    }
+
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // Keep all native libraries
+            keepDebugSymbols += "**/*.so"
+        }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    // NDK configuration for native library support
+    ndkVersion = "26.1.10909125"
 }
 
 dependencies {

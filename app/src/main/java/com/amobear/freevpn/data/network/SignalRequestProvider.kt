@@ -6,6 +6,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import com.amobear.freevpn.BuildConfig
+import com.amobear.freevpn.data.network.api.dto.SignalRegisterRequest
 import com.amobear.freevpn.domain.usecase.SignalHeaderParams
 import com.amobear.freevpn.domain.usecase.SignalQueryParams
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -102,6 +103,79 @@ class SignalRequestProvider @Inject constructor(
         val systemUA = System.getProperty("http.agent")
         if (!systemUA.isNullOrBlank()) return systemUA
         return "Dalvik/2.1.0 (Linux; U; Android ${Build.VERSION.RELEASE}; ${Build.MODEL})"
+    }
+
+    /**
+     * Generate reqToken from authId and authToken
+     * Formula: MD5("auth_id=$authId&auth_token=$authToken&app_package=$appPackage&app_ver_code=$appVerCode&app_signature=2d19513c8872e4625f1353167a0cde7c")
+     */
+    fun generateReqToken(authId: Long, authToken: Long): String {
+        val appPackage = context.packageName
+        val appVerCode = BuildConfig.VERSION_CODE.toString()
+        return md5("auth_id=$authId&auth_token=$authToken&app_package=$appPackage&app_ver_code=$appVerCode&app_signature=2d19513c8872e4625f1353167a0cde7c")
+    }
+
+    /**
+     * Generate initial reqToken for register API call (when authId and authToken are not yet available)
+     * Uses authId=0 and authToken=0 for initial registration
+     */
+    fun generateInitialReqToken(): String {
+        return generateReqToken(0L, 0L)
+    }
+
+    /**
+     * Build SignalRegisterRequest with device information
+     */
+    fun buildRegisterRequest(): SignalRegisterRequest {
+        val locale = Locale.getDefault()
+        val devLang = "${locale.language}_${locale.country}"
+        
+        // Get device ID (Android ID)
+        val devId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+            ?: UUID.randomUUID().toString()
+        
+        return SignalRegisterRequest(
+            devId = devId,
+            devModel = Build.MODEL,
+            devManufacturer = Build.MANUFACTURER,
+            devLang = devLang,
+            devOs = "Android ${Build.VERSION.RELEASE}",
+            devCountry = locale.country.ifBlank { "US" },
+            appPackage = context.packageName,
+            appVerName = BuildConfig.VERSION_NAME,
+            appVerCode = BuildConfig.VERSION_CODE
+        )
+    }
+
+    /**
+     * Get app package name
+     */
+    fun getAppPackage(): String = context.packageName
+
+    /**
+     * Get app version code as string
+     */
+    fun getAppVerCode(): String = BuildConfig.VERSION_CODE.toString()
+
+    /**
+     * Get user agent string
+     */
+    fun getUserAgent(): String = buildUserAgent()
+
+    /**
+     * Get device language
+     */
+    fun getDevLang(): String {
+        val locale = Locale.getDefault()
+        return "${locale.language}_${locale.country}"
+    }
+
+    /**
+     * Get device country
+     */
+    fun getDevCountry(): String? {
+        val locale = Locale.getDefault()
+        return locale.country.ifBlank { null }
     }
 }
 

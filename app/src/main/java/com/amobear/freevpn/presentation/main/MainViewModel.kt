@@ -9,6 +9,8 @@ import com.amobear.freevpn.domain.model.Server
 import com.amobear.freevpn.domain.model.SignalServerResponse
 import com.amobear.freevpn.domain.model.TrafficStats
 import com.amobear.freevpn.domain.model.VpnConnection
+import com.amobear.freevpn.domain.model.SignalServer
+import com.amobear.freevpn.domain.usecase.ConnectSignalVpnUseCase
 import com.amobear.freevpn.domain.usecase.ConnectVpnUseCase
 import com.amobear.freevpn.domain.usecase.DisconnectVpnUseCase
 import com.amobear.freevpn.domain.usecase.FetchSignalServersUseCase
@@ -51,6 +53,7 @@ class MainViewModel @Inject constructor(
     private val syncServersUseCase: SyncServersUseCase,
     private val initializeDataUseCase: InitializeDataUseCase,
     private val fetchSignalServersUseCase: FetchSignalServersUseCase,
+    private val connectSignalVpnUseCase: ConnectSignalVpnUseCase,
     @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
@@ -67,9 +70,28 @@ class MainViewModel @Inject constructor(
         observeConnection()
 
         observeTraffic()
+        
+        // Observe Signal VPN connection state
+        observeSignalVpnConnection()
 
         // Load servers
         loadServers()
+    }
+    
+    /**
+     * Observe Signal VPN connection state
+     */
+    private fun observeSignalVpnConnection() {
+        viewModelScope.launch {
+            connectSignalVpnUseCase.observeConnectionState().collect { state ->
+                _uiState.update {
+                    it.copy(
+                        signalVpnConnectionState = state,
+                        isSignalConnecting = state is ConnectSignalVpnUseCase.ConnectionState.Connecting
+                    )
+                }
+            }
+        }
     }
 
     /**
@@ -253,11 +275,18 @@ class MainViewModel @Inject constructor(
     fun fetchSignalServers() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSignalLoading = true, signalError = null) }
-            fetchSignalServersUseCase()
-                .onSuccess { signalResponse ->
+            fetchSignalServersUseCase.fetchWithCredentials()
+                .onSuccess { fetchResult ->
+                    // Initialize Signal VPN with server list and credentials
+                    connectSignalVpnUseCase.initialize(
+                        fetchResult.serverResponse,
+                        fetchResult.authId,
+                        fetchResult.authToken
+                    )
+                    
                     _uiState.update {
                         it.copy(
-                            signalResponse = signalResponse,
+                            signalResponse = fetchResult.serverResponse,
                             isSignalLoading = false,
                             signalError = null,
                             showSignalList = true
@@ -272,6 +301,74 @@ class MainViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+    
+    /**
+     * Connect to Signal VPN server
+     */
+    fun connectSignalVpn(server: SignalServer) {
+        viewModelScope.launch {
+            // Check VPN permission first
+            val permissionIntent = connectSignalVpnUseCase.checkVpnPermission()
+            if (permissionIntent != null) {
+                _uiState.update {
+                    it.copy(
+                        signalVpnPermissionIntent = permissionIntent,
+                        showSignalVpnPermissionRequest = true
+                    )
+                }
+                return@launch
+            }
+            
+            _uiState.update {
+                it.copy(
+                    isSignalConnecting = true,
+                    signalError = null,
+                    selectedSignalServer = server
+                )
+            }
+            
+            // Connect to Signal VPN
+            connectSignalVpnUseCase.connect(server)
+        }
+    }
+    
+    /**
+     * Disconnect from Signal VPN
+     */
+    fun disconnectSignalVpn() {
+        viewModelScope.launch {
+            connectSignalVpnUseCase.disconnect()
+            _uiState.update {
+                it.copy(
+                    isSignalConnecting = false,
+                    selectedSignalServer = null
+                )
+            }
+        }
+    }
+    
+    /**
+     * Handle Signal VPN permission granted
+     */
+    fun onSignalVpnPermissionGranted() {
+        _uiState.update { it.copy(showSignalVpnPermissionRequest = false) }
+        // Retry connection after permission granted
+        _uiState.value.selectedSignalServer?.let { server ->
+            connectSignalVpn(server)
+        }
+    }
+    
+    /**
+     * Handle Signal VPN permission denied
+     */
+    fun onSignalVpnPermissionDenied() {
+        _uiState.update {
+            it.copy(
+                showSignalVpnPermissionRequest = false,
+                signalError = "VPN permission required to connect"
+            )
         }
     }
 
@@ -376,7 +473,12 @@ data class MainUiState(
     val signalResponse: SignalServerResponse? = null,
     val isSignalLoading: Boolean = false,
     val signalError: String? = null,
-    val showSignalList: Boolean = false
+    val showSignalList: Boolean = false,
+    val selectedSignalServer: SignalServer? = null,
+    val isSignalConnecting: Boolean = false,
+    val signalVpnConnectionState: ConnectSignalVpnUseCase.ConnectionState = ConnectSignalVpnUseCase.ConnectionState.Idle,
+    val showSignalVpnPermissionRequest: Boolean = false,
+    val signalVpnPermissionIntent: android.content.Intent? = null
 )
 
 data class SessionSummary(
